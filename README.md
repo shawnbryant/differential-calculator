@@ -31,6 +31,7 @@
 - **Ring Gear Runout Checker**: Diagnoses dial indicator Total Indicated Runout (TIR) values and recommends when to reseat or inspect flange surfaces.
 - **Marking Compound Pattern Guide**: Built-in visual cards indicating ideal contact patterns, deep patterns, shallow patterns, and backlash effects, with recommended shim corrections.
 - **Printable Garage Sheet**: Responsive CSS styling formatted for print, letting you print a clean build sheet directly from the browser to keep in the workshop.
+- **Interactive Setup Tutorial**: Includes an auto-launching step-by-step walkthrough tour that guides the user through the input fields, SVG diagram, shimming logic, and calibration tools.
 
 ---
 
@@ -45,6 +46,7 @@
 ### Option 1 — In the Browser (Recommended)
 1. Double-click **`launch.command`** (macOS) or open **`index.html`** directly in any modern browser.
 2. If macOS blocks the `.command` launcher, right-click it, select **Open**, and confirm.
+3. **Interactive Setup Walkthrough**: When first launched, the app automatically starts an interactive step-by-step tutorial tour guiding you through the setup sequence. You can re-trigger this tour at any time by clicking the **Start Tutorial** button in the header.
 
 ### Option 2 — In the Console (Python CLI)
 The calculator includes a fully featured command-line version in Python.
