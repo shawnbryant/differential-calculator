@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Differential Setup Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.35);
+            --accent-cyan: #06b6d4;
+            --accent-cyan-glow: rgba(6, 182, 212, 0.3);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.25);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.25);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.25);
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --card-radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            padding: 2rem 1.5rem;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* ── Header ── */
+        header {
+            margin-bottom: 1.75rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.5rem;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+        .header-title h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .header-title p { color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-start; }
+
+        /* Setup info bar */
+        .setup-info-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .setup-field { display: flex; flex-direction: column; gap: 0.3rem; }
+        .setup-field label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .setup-select, .setup-input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: border-color 0.2s;
+            min-width: 160px;
+        }
+        .setup-select:focus, .setup-input:focus { outline: none; border-color: var(--primary); }
+        .setup-input.notes { min-width: 220px; }
+
+        /* ── Step Progress ── */
+        .step-progress {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1.75rem;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            width: fit-content;
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.65rem 1.25rem;
+            background: rgba(17, 24, 39, 0.8);
+            border-right: 1px solid var(--card-border);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .step-item:last-child { border-right: none; }
+        .step-item.active { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+        .step-num {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step-item.active .step-num { background: var(--primary); color: #fff; }
+
+        /* ── Buttons ── */
+        .btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.65rem 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+        .btn:hover { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-1px); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%); border: none; box-shadow: 0 4px 20px var(--primary-glow); }
+        .btn-primary:hover { background: linear-gradient(135deg, #60a5fa 0%, var(--primary) 100%); box-shadow: 0 4px 25px rgba(59,130,246,0.6); }
+        .btn-print { border-color: rgba(139,92,246,0.4); }
+        .btn-print:hover { border-color: var(--purple); box-shadow: 0 0 15px rgba(139,92,246,0.3); }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.35rem;
+            margin-bottom: 1.75rem;
+            width: fit-content;
+            backdrop-filter: blur(10px);
+        }
+        .tab-btn {
+            background: transparent; border: none; color: var(--text-muted);
+            padding: 0.65rem 1.5rem; font-size: 0.9rem; font-weight: 600;
+            border-radius: 9px; cursor: pointer; transition: all 0.25s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        /* ── Main Dashboard Grid ── */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 440px 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 1100px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        /* ── Glass Card ── */
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--card-radius);
+            padding: 1.75rem;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+            display: flex; flex-direction: column; gap: 1.4rem;
+            transition: border-color 0.3s ease;
+        }
+        .glass-card:focus-within { border-color: rgba(59, 130, 246, 0.4); }
+
+        .card-header-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem; font-weight: 700; color: #fff;
+            border-left: 4px solid var(--primary); padding-left: 0.75rem; line-height: 1.2;
+        }
+        .card-header-title.cyan { border-color: var(--accent-cyan); }
+        .card-header-title.success { border-color: var(--success); }
+        .card-header-title.warning { border-color: var(--warning); }
+        .card-header-title.purple { border-color: var(--purple); }
+        .card-header-title.pink { border-color: var(--pink); }
+
+        /* ── Inputs ── */
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .input-label-row { display: flex; justify-content: space-between; align-items: center; }
+        .input-label { font-size: 0.87rem; font-weight: 500; color: var(--text-main); }
+        .input-helper { font-size: 0.73rem; color: var(--text-muted); }
+        .input-field-wrapper { position: relative; display: flex; align-items: center; }
+        .input-control {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 0.7rem 2.5rem 0.7rem 1rem;
+            color: #fff; font-size: 1rem; font-weight: 600;
+            transition: all 0.25s ease;
+        }
+        .input-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(59,130,246,0.2); }
+        .input-unit { position: absolute; right: 1rem; color: var(--text-muted); font-size: 0.82rem; font-weight: 500; pointer-events: none; }
+        .input-control.readonly { opacity: 0.7; cursor: default; border-color: rgba(255,255,255,0.04); }
+
+        /* ── Visualizer ── */
+        .right-panel { display: flex; flex-direction: column; gap: 2rem; }
+        .visualizer-container {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: var(--card-radius);
+            padding: 1.5rem;
+            position: relative; min-height: 360px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+        }
+        .visualizer-svg { width: 100%; height: 320px; }
+
+        /* ── Results ── */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+        }
+        .result-card {
+            background: rgba(30, 41, 59, 0.35);
+            border: 1px solid var(--card-border);
+            border-radius: 12px; padding: 1.1rem;
+            position: relative; overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .result-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+        .result-card.success-border::before { background: var(--success); }
+        .result-card.warning-border::before { background: var(--warning); }
+        .result-card.cyan-border::before { background: var(--accent-cyan); }
+        .result-card.purple-border::before { background: var(--purple); }
+        .result-title { font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+        .result-value { font-size: 1.7rem; font-weight: 700; color: #fff; margin: 0.35rem 0; font-family: 'Outfit', sans-serif; }
+        .result-formula { font-size: 0.75rem; color: var(--text-muted); font-style: italic; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.35rem; margin-top: 0.35rem; }
+
+        .action-alert {
+            grid-column: 1 / -1; padding: 1.35rem;
+            border-radius: 12px; display: flex; flex-direction: column; gap: 0.4rem;
+            backdrop-filter: blur(10px);
+        }
+        .action-alert.action-add { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #fde047; box-shadow: 0 0 15px rgba(245,158,11,0.1); }
+        .action-alert.action-remove { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; box-shadow: 0 0 15px rgba(239,68,68,0.1); }
+        .action-alert.action-ok { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #a7f3d0; box-shadow: 0 0 15px rgba(16,185,129,0.1); }
+        .action-alert h4 { font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .action-alert p { font-size: 0.9rem; line-height: 1.4; opacity: 0.9; }
+
+        .section-separator { border-top: 1px dashed var(--card-border); margin: 0.4rem 0; }
+
+        /* ── Section Divider ── */
+        .section-divider {
+            display: flex; align-items: center; gap: 1rem;
+            margin: 2.5rem 0 1.5rem;
+        }
+        .section-divider-line { flex: 1; height: 1px; background: var(--card-border); }
+        .section-divider-label {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem; font-weight: 700; color: #fff;
+            padding: 0.4rem 1rem;
+            background: rgba(17,24,39,0.9);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .section-divider-label .step-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px; border-radius: 50%;
+            font-size: 0.75rem; font-weight: 700; margin-right: 0.4rem;
+        }
+        .step-badge.blue { background: var(--primary); color: #fff; }
+        .step-badge.cyan { background: var(--accent-cyan); color: #0b0f19; }
+        .step-badge.green { background: var(--success); color: #fff; }
+        .step-badge.purple { background: var(--purple); color: #fff; }
+        .step-badge.pink { background: var(--pink); color: #fff; }
+
+        /* ── Preload Section ── */
+        .three-col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        @media (max-width: 1000px) { .three-col-grid { grid-template-columns: 1fr; } }
+
+        .spec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .spec-table th { text-align: left; padding: 0.4rem 0.5rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--card-border); }
+        .spec-table td { padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-main); }
+        .spec-table tr:last-child td { border-bottom: none; }
+        .spec-table .highlight-row td { color: #60a5fa; font-weight: 600; background: rgba(59,130,246,0.07); }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.35rem 0.75rem; border-radius: 20px;
+            font-size: 0.82rem; font-weight: 600;
+        }
+        .status-badge.pass { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+        .status-badge.warn { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+        .status-badge.fail { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .status-badge.none { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--card-border); }
+
+        .big-result {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem; font-weight: 800; color: #fff;
+        }
+        .big-result-unit { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+        .range-label { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* ── Backlash Section ── */
+        .two-col-grid { display: grid; grid-template-columns: 460px 1fr; gap: 1.5rem; }
+        @media (max-width: 1000px) { .two-col-grid { grid-template-columns: 1fr; } }
+
+        .ring-gear-toggle { display: flex; gap: 0.5rem; }
+        .rg-btn {
+            flex: 1; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--card-border);
+            background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .rg-btn.active { background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.4); }
+
+        .shim-split-visual {
+            display: flex; align-items: stretch; border-radius: 10px; overflow: hidden;
+            height: 48px; border: 1px solid var(--card-border); margin: 0.25rem 0;
+        }
+        .shim-side-left, .shim-side-right {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700; transition: all 0.4s ease;
+            gap: 0.3rem; padding: 0 0.5rem;
+        }
+        .shim-side-left { background: rgba(59,130,246,0.25); color: #93c5fd; }
+        .shim-side-right { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+
+        .backlash-action {
+            padding: 1.25rem; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 0.4rem;
+        }
+        .backlash-action.move-rg { background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.3); }
+        .backlash-action.move-op { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); }
+        .backlash-action.bl-ok { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); }
+        .backlash-action.bl-none { background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); }
+        .backlash-action h4 { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; }
+        .backlash-action p { font-size: 0.88rem; line-height: 1.5; color: var(--text-muted); }
+
+        /* ── Runout Section ── */
+        .runout-section { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 800px) { .runout-section { grid-template-columns: 1fr; } }
+
+        /* ── Pattern Guide ── */
+        .pattern-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+        @media (max-width: 1100px) { .pattern-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .pattern-grid { grid-template-columns: 1fr; } }
+
+        .pattern-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 14px; padding: 1.25rem;
+            display: flex; flex-direction: column; gap: 0.75rem;
+        }
+        .pattern-diagram {
+            width: 100%; height: 90px; border-radius: 8px; position: relative; overflow: hidden;
+            background: rgba(15,23,42,0.8);
+            border: 1px solid var(--card-border);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pattern-card h4 { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; }
+        .pattern-card .pattern-status { font-size: 0.75rem; font-weight: 600; margin-bottom: -0.25rem; }
+        .pattern-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+        .pattern-card .fix { font-size: 0.78rem; color: #fbbf24; font-weight: 600; }
+
+        /* SVG styles */
+        .svg-text { font-family: 'Inter', sans-serif; font-size: 10px; fill: var(--text-muted); font-weight: 500; }
+        .svg-text-bold { font-family: 'Outfit', sans-serif; font-size: 11px; fill: #ffffff; font-weight: 700; }
+        .svg-line-dim { stroke: rgba(255,255,255,0.15); stroke-dasharray: 4 4; stroke-width: 1px; }
+
+        @media print {
+            body { background: white; color: #000; padding: 1rem; }
+            .btn, .tabs, .step-progress, header .header-actions { display: none; }
+            .glass-card { border: 1px solid #ccc; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- ═══════════════════════════════════════════════════════ HEADER -->
+    <header>
+        <div class="header-top">
+            <div class="header-title">
+                <h1>
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="3" stroke="#3b82f6" stroke-width="2.5"/>
+                        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    Differential Setup Calculator
+                </h1>
+                <p>Complete first-time setup — pinion depth, preload, backlash, runout &amp; pattern check.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn" id="btn-load-example">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Load Example (Ram 1500 Rear)
+                </button>
+                <button class="btn btn-print" onclick="window.print()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Print Sheet
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Info Bar -->
+        <div class="setup-info-bar">
+            <div class="setup-field">
+                <label>Differential / Axle</label>
+                <select class="setup-select" id="axle-type" onchange="updatePreloadSpecs()">
+                    <option value="ford-88">Ford 8.8"</option>
+                    <option value="ford-9">Ford 9"</option>
+                    <option value="dana-30">Dana 30</option>
+                    <option value="dana-35">Dana 35</option>
+                    <option value="dana-44">Dana 44</option>
+                    <option value="dana-60">Dana 60</option>
+                    <option value="gm-75">GM 7.5" (10-bolt)</option>
+                    <option value="gm-85">GM 8.5" (10-bolt)</option>
+                    <option value="gm-86">GM 8.6" (10-bolt)</option>
+                    <option value="gm-12bolt">GM 12-bolt</option>
+                    <option value="chrysler-825">Chrysler 8.25"</option>
+                    <option value="chrysler-925">Chrysler 9.25"</option>
+                    <option value="toyota-8">Toyota 8"</option>
+                    <option value="other" selected>Other / Unknown</option>
+                </select>
+            </div>
+            <div class="setup-field">
+                <label>Gear Ratio</label>
+                <input type="text" class="setup-input" id="gear-ratio" placeholder="e.g. 4.10" style="min-width:100px;">
+            </div>
+            <div class="setup-field">
+                <label>Bearing Condition</label>
+                <select class="setup-select" id="bearing-condition" onchange="updatePreloadSpecs()" style="min-width:130px;">
+                    <option value="new">New Bearings</option>
+                    <option value="used">Reused / Used</option>
+                </select>
+            </div>
+            <div class="setup-field">
+                <label>Vehicle / Notes</label>
+                <input type="text" class="setup-input notes" id="vehicle-notes" placeholder="e.g. 2005 Ram 1500, rear axle">
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════ STEP PROGRESS -->
+    <div class="step-progress">
+        <div class="step-item active"><span class="step-num">1</span> Pinion Depth</div>
+        <div class="step-item"><span class="step-num">2</span> Pinion Preload</div>
+        <div class="step-item"><span class="step-num">3</span> Carrier &amp; Backlash</div>
+        <div class="step-item"><span class="step-num">4</span> Runout Check</div>
+        <div class="step-item"><span class="step-num">5</span> Pattern Check</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ STEP 1 TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-current" onclick="switchTab('current')">Current / Pre-existing Setup</button>
+        <button class="tab-btn" id="tab-desired" onclick="switchTab('desired')">Manufacturing Specs (New Setup)</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ STEP 1 DASHBOARD -->
+    <div class="dashboard-grid">
+        <!-- LEFT: Input Panel -->
+        <div class="glass-card" id="input-panel">
+            <h3 class="card-header-title" id="panel-title">Current Setup Configuration</h3>
+
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-face-race">Face to Race</label>
+                    <span class="input-helper">Diff face → top of carrier bearing race</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-face-race" class="input-control" value="0.473">
+                    <span class="input-unit">in</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-race-od">Race Outer Diameter (OD)</label>
+                    <span class="input-helper">Outer diameter of the carrier bearing race</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-race-od" class="input-control" value="3.310">
+                    <span class="input-unit">in</span>
+                </div>
+            </div>
+
+            <div class="input-group" id="group-mode-specific-1"></div>
+            <div class="input-group" id="group-mode-specific-2"></div>
+
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-target-marking">Pinion Etched Target Marking</label>
+                    <span class="input-helper">Stamped on pinion head — target depth</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-target-marking" class="input-control" value="2.809">
+                    <span class="input-unit">in</span>
+                </div>
+            </div>
+
+            <div class="section-separator"></div>
+
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="checkbox" id="chk-carrier" checked style="cursor:pointer;width:16px;height:16px;">
+                <label for="chk-carrier" style="font-size:0.9rem;font-weight:600;cursor:pointer;">Include Carrier Shim Calculations</label>
+            </div>
+
+            <div id="carrier-inputs" style="display:flex;flex-direction:column;gap:1.4rem;">
+                <div class="input-group">
+                    <div class="input-label-row">
+                        <label class="input-label" for="inp-housing-width">Housing Internal Width</label>
+                        <span class="input-helper">Between bearing bulkheads (inner axle spacing)</span>
+                    </div>
+                    <div class="input-field-wrapper">
+                        <input type="number" step="0.001" id="inp-housing-width" class="input-control" value="8.000">
+                        <span class="input-unit">in</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-row">
+                        <label class="input-label" for="inp-carrier-width">Carrier + Races Width</label>
+                        <span class="input-helper">Full assembly width without shims installed</span>
+                    </div>
+                    <div class="input-field-wrapper">
+                        <input type="number" step="0.001" id="inp-carrier-width" class="input-control" value="7.950">
+                        <span class="input-unit">in</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-row">
+                        <label class="input-label" for="inp-preload">Desired Carrier Preload</label>
+                        <span class="input-helper">Typical starting point: 0.008"</span>
+                    </div>
+                    <div class="input-field-wrapper">
+                        <input type="number" step="0.001" id="inp-preload" class="input-control" value="0.008">
+                        <span class="input-unit">in</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Visualizer + Results -->
+        <div class="right-panel">
+            <div class="visualizer-container">
+                <svg class="visualizer-svg" id="visualizer-svg" viewBox="0 0 600 320">
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+                        </pattern>
+                        <filter id="glow-primary" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="6" result="blur"/>
+                            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                        </filter>
+                        <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="4" result="blur"/>
+                            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                        </filter>
+                        <filter id="glow-warning" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="5" result="blur"/>
+                            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                        </filter>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)"/>
+                    <path d="M 50 10 L 50 310" stroke="#4b5563" stroke-width="3"/>
+                    <path d="M 50 30 L 400 30" stroke="rgba(75,85,99,0.5)" stroke-width="2"/>
+                    <path d="M 50 300 L 400 300" stroke="rgba(75,85,99,0.5)" stroke-width="2"/>
+                    <text x="55" y="25" class="svg-text">DIFF COVER FLANGE (0.000")</text>
+                    <line id="svg-centerline" x1="262.8" y1="10" x2="262.8" y2="310" stroke="var(--accent-cyan)" stroke-width="2" filter="url(#glow-cyan)"/>
+                    <text id="svg-centerline-lbl" x="268" y="25" class="svg-text-bold" fill="var(--accent-cyan)">AXLE CL</text>
+                    <rect id="svg-bearing-race" x="97.3" y="110" width="331" height="110" rx="4" fill="rgba(59,130,246,0.15)" stroke="var(--primary)" stroke-width="1.5"/>
+                    <text id="svg-race-lbl" x="105" y="128" class="svg-text" fill="var(--primary)">BEARING RACE</text>
+                    <rect id="svg-pinion-head" x="544.1" y="130" width="80" height="70" rx="3" fill="rgba(245,158,11,0.3)" stroke="var(--warning)" stroke-width="2" filter="url(#glow-warning)"/>
+                    <rect id="svg-pinion-shaft" x="624.1" y="145" width="100" height="40" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                    <text id="svg-pinion-lbl" x="550" y="168" class="svg-text-bold" fill="var(--warning)">PINION</text>
+                    <g id="svg-dim-centerline">
+                        <line x1="50" y1="55" x2="262.8" y2="55" class="svg-line-dim"/>
+                        <circle cx="50" cy="55" r="3" fill="var(--text-muted)"/>
+                        <circle cx="262.8" cy="55" r="3" fill="var(--text-muted)"/>
+                        <text x="120" y="50" class="svg-text-bold" id="svg-dim-centerline-text">Centerline: 2.128"</text>
+                    </g>
+                    <g id="svg-dim-pinion">
+                        <line x1="50" y1="278" x2="544.1" y2="278" class="svg-line-dim"/>
+                        <circle cx="50" cy="278" r="3" fill="var(--text-muted)"/>
+                        <circle cx="544.1" cy="278" r="3" fill="var(--text-muted)"/>
+                        <text x="240" y="273" class="svg-text-bold" id="svg-dim-pinion-text">Face to Pinion: 4.941"</text>
+                    </g>
+                    <g id="svg-dim-cd">
+                        <line x1="262.8" y1="200" x2="544.1" y2="200" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="3 3"/>
+                        <circle cx="262.8" cy="200" r="3.5" fill="#f472b6"/>
+                        <circle cx="544.1" cy="200" r="3.5" fill="#f472b6"/>
+                        <text x="360" y="195" class="svg-text-bold" fill="#f472b6" id="svg-dim-cd-text">Checking: 2.813"</text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Results -->
+            <div class="results-grid">
+                <div class="result-card cyan-border">
+                    <div class="result-title">Axle Centerline</div>
+                    <div class="result-value" id="res-centerline">2.1280 in</div>
+                    <div class="result-formula" id="formula-centerline">Face to Race + (Race OD / 2)</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title" id="res-mode-title">Checking Distance</div>
+                    <div class="result-value" id="res-mode-value">2.8130 in</div>
+                    <div class="result-formula" id="formula-mode">Face to Pinion − Centerline</div>
+                </div>
+                <div class="result-card success-border" id="card-carrier-shims">
+                    <div class="result-title">Total Carrier Shim Stack</div>
+                    <div class="result-value" id="res-carrier">0.0580 in</div>
+                    <div class="result-formula">Housing − Carrier Width + Preload</div>
+                </div>
+                <div class="action-alert action-add" id="action-panel">
+                    <h4 id="action-heading">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                        SHIM ADJUSTMENT: ADD 0.0040"
+                    </h4>
+                    <p id="action-description">Pinion is sitting too far out. Add shims to push it deeper toward the axle centerline.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ STEP 2: PINION BEARING PRELOAD -->
+    <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label"><span class="step-badge cyan">2</span> Pinion Bearing Preload</div>
+        <div class="section-divider-line"></div>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.25rem;">
+        Measure with an in-lb torque wrench rotating the pinion. No ring gear installed. No pinion seal installed. Tighten nut gradually — crush sleeves cannot be reused once over-crushed.
+    </p>
+
+    <div class="three-col-grid">
+        <!-- Specs Reference Card -->
+        <div class="glass-card">
+            <h3 class="card-header-title cyan">Target Preload Specs</h3>
+            <div id="preload-axle-label" style="font-size:0.8rem;color:var(--text-muted);margin-top:-0.5rem;">Other / Unknown — verify with service manual</div>
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>Condition</th>
+                        <th>Target (in-lb)</th>
+                        <th>Add w/ seal</th>
+                    </tr>
+                </thead>
+                <tbody id="preload-spec-body">
+                    <tr class="highlight-row">
+                        <td>New bearings</td>
+                        <td id="spec-new-range">16 – 30 in-lb</td>
+                        <td>+3–5 in-lb</td>
+                    </tr>
+                    <tr>
+                        <td>Reused bearings</td>
+                        <td id="spec-used-range">8 – 16 in-lb</td>
+                        <td>+3–5 in-lb</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-top:-0.5rem;">
+                Measure as <strong>rotating (breakaway)</strong> torque, not tightening torque. Always start loose and work up — never back off a crush sleeve.
+            </div>
+        </div>
+
+        <!-- Measured Input -->
+        <div class="glass-card">
+            <h3 class="card-header-title cyan">Your Measurement</h3>
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-pinion-preload">Measured Rotating Preload</label>
+                    <span class="input-helper">Without seal, without ring gear</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.5" id="inp-pinion-preload" class="input-control" placeholder="Enter reading..." oninput="updatePreloadStatus()">
+                    <span class="input-unit">in-lb</span>
+                </div>
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;">
+                <strong style="color:var(--text-main);">Procedure:</strong> With pinion nut snug, check rotating torque. If too low, tighten nut in small increments. If using a solid spacer, add or remove shims. Check after each increment.
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="glass-card">
+            <h3 class="card-header-title cyan">Preload Status</h3>
+            <div>
+                <div class="big-result" id="preload-display">—</div>
+                <div class="big-result-unit" id="preload-unit-label">in-lb measured</div>
+            </div>
+            <div id="preload-status-badge"><span class="status-badge none">Enter a measurement</span></div>
+            <div id="preload-status-note" style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;"></div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ STEP 3: CARRIER & BACKLASH -->
+    <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label"><span class="step-badge green">3</span> Backlash &amp; Carrier Shim Distribution</div>
+        <div class="section-divider-line"></div>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.25rem;">
+        The total shim stack (calculated above) stays constant — moving shims side-to-side shifts the ring gear, changing backlash without affecting carrier preload. Measure backlash with a dial indicator on the ring gear face, pinion held still.
+    </p>
+
+    <div class="two-col-grid">
+        <!-- Inputs -->
+        <div class="glass-card">
+            <h3 class="card-header-title success">Shim Distribution Inputs</h3>
+
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label">Total Carrier Shim Stack</label>
+                    <span class="input-helper">Auto-filled from Step 1 above</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-bl-total-shims" class="input-control readonly" readonly value="0.0580">
+                    <span class="input-unit">in</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label" style="margin-bottom:0.35rem;">Ring Gear Side</label>
+                <div class="ring-gear-toggle">
+                    <button class="rg-btn active" id="rg-left" onclick="setRingGearSide('left')">LEFT Side</button>
+                    <button class="rg-btn" id="rg-right" onclick="setRingGearSide('right')">RIGHT Side</button>
+                </div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">Looking from the pinion end</div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-rg-shims">Ring Gear Side Shims (current)</label>
+                    <span class="input-helper">Start at ~50% of total — adjust after measuring</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-rg-shims" class="input-control" value="0.029" oninput="calculateBacklash()">
+                    <span class="input-unit">in</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-measured-bl">Measured Backlash</label>
+                    <span class="input-helper">Dial indicator on ring gear, pinion held still</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-measured-bl" class="input-control" placeholder="Enter dial reading..." oninput="calculateBacklash()">
+                    <span class="input-unit">in</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-target-bl">Target Backlash</label>
+                    <span class="input-helper" id="bl-target-range-label">Typical: 0.006–0.012" (verify with service manual)</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-target-bl" class="input-control" value="0.008" oninput="calculateBacklash()">
+                    <span class="input-unit">in</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backlash Results -->
+        <div class="glass-card">
+            <h3 class="card-header-title success">Shim Distribution &amp; Adjustment</h3>
+
+            <!-- Visual shim split bar -->
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted);margin-bottom:0.4rem;">
+                    <span id="bl-left-label">LEFT (Ring Gear)</span>
+                    <span id="bl-right-label">RIGHT (Opposite)</span>
+                </div>
+                <div class="shim-split-visual">
+                    <div class="shim-side-left" id="shim-bar-left" style="flex:1;">
+                        <span id="shim-bar-left-val">0.0290"</span>
+                    </div>
+                    <div class="shim-side-right" id="shim-bar-right" style="flex:1;">
+                        <span id="shim-bar-right-val">0.0290"</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="result-card" style="margin:0;">
+                    <div class="result-title" id="bl-rg-side-title">Ring Gear Side</div>
+                    <div class="result-value" id="bl-rg-shims" style="font-size:1.4rem;">0.0290 in</div>
+                    <div class="result-formula" id="bl-rg-side-note">Starting value</div>
+                </div>
+                <div class="result-card" style="margin:0;">
+                    <div class="result-title" id="bl-op-side-title">Opposite Side</div>
+                    <div class="result-value" id="bl-op-shims" style="font-size:1.4rem;">0.0290 in</div>
+                    <div class="result-formula">Total − Ring Gear Side</div>
+                </div>
+            </div>
+
+            <div class="backlash-action bl-none" id="bl-action-panel">
+                <h4 id="bl-action-heading" style="color:var(--text-muted);">Enter measured backlash to get adjustment</h4>
+                <p id="bl-action-desc">Measure backlash with a dial indicator on the ring gear teeth face.</p>
+            </div>
+
+            <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--card-border);padding-top:0.75rem;">
+                <strong style="color:var(--text-main);">How it works:</strong> Moving shims from one side to the other shifts the ring gear position by the same amount, which changes backlash by approximately the same amount. Total preload is preserved.
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ STEP 4: RING GEAR RUNOUT -->
+    <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label"><span class="step-badge purple">4</span> Ring Gear Runout</div>
+        <div class="section-divider-line"></div>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.25rem;">
+        With the carrier installed and ring gear bolted on (to spec torque), mount a dial indicator on the back face of the ring gear. Rotate the carrier through one full revolution and record the total indicated runout (TIR).
+    </p>
+
+    <div class="runout-section">
+        <div class="glass-card">
+            <h3 class="card-header-title purple">Runout Measurement</h3>
+            <div class="input-group">
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-runout">Measured Ring Gear TIR</label>
+                    <span class="input-helper">Total indicated runout — full revolution</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.0005" id="inp-runout" class="input-control" placeholder="Enter dial reading..." oninput="updateRunoutStatus()">
+                    <span class="input-unit">in</span>
+                </div>
+            </div>
+            <div>
+                <div class="big-result" id="runout-display">—</div>
+                <div class="big-result-unit">in TIR measured</div>
+            </div>
+            <div id="runout-status-badge"><span class="status-badge none">Enter a measurement</span></div>
+            <div id="runout-status-note" style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;margin-top:0.25rem;"></div>
+        </div>
+
+        <div class="glass-card">
+            <h3 class="card-header-title purple">Runout Tolerance Guide</h3>
+            <table class="spec-table">
+                <thead>
+                    <tr><th>Reading</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>&lt; 0.002"</td><td style="color:#34d399;">Excellent</td><td>Proceed</td></tr>
+                    <tr><td>0.002" – 0.003"</td><td style="color:#fbbf24;">Acceptable</td><td>Proceed, monitor wear</td></tr>
+                    <tr><td>0.003" – 0.005"</td><td style="color:#f87171;">High</td><td>Reseat ring gear, check for debris</td></tr>
+                    <tr><td>&gt; 0.005"</td><td style="color:#ef4444;font-weight:700;">Fail</td><td>Do not run — find cause before proceeding</td></tr>
+                </tbody>
+            </table>
+            <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">
+                <strong style="color:var(--text-main);">Causes of high runout:</strong> Debris between ring gear and carrier flange, damaged carrier flange, bent ring gear, incorrect ring gear bolt torque pattern. Remove and clean, re-torque in a star pattern, re-check.
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ STEP 5: GEAR CONTACT PATTERN -->
+    <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label"><span class="step-badge pink">5</span> Gear Contact Pattern Guide</div>
+        <div class="section-divider-line"></div>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.25rem;">
+        Apply a thin coat of marking compound (gear blue or similar) to 6–8 ring gear teeth. Rotate the ring gear by hand with load resistance on both directions. Examine the contact pattern. A correct pattern means your pinion depth is set properly.
+    </p>
+
+    <div class="pattern-grid">
+        <!-- Ideal Pattern -->
+        <div class="pattern-card">
+            <div class="pattern-status" style="color:#34d399;">CORRECT</div>
+            <h4>Ideal Contact Pattern</h4>
+            <div class="pattern-diagram">
+                <svg viewBox="0 0 160 80" width="100%" height="100%">
+                    <rect x="0" y="0" width="160" height="80" fill="#0f172a"/>
+                    <rect x="10" y="10" width="140" height="60" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                    <!-- Tooth shape -->
+                    <rect x="20" y="20" width="120" height="40" rx="3" fill="rgba(255,255,255,0.06)"/>
+                    <!-- Contact patch - centered, good size -->
+                    <ellipse cx="80" cy="40" rx="40" ry="14" fill="rgba(16,185,129,0.5)" stroke="#10b981" stroke-width="1.5"/>
+                    <text x="80" y="44" text-anchor="middle" fill="white" font-size="9" font-weight="700">CENTERED</text>
+                    <!-- Drive/coast labels -->
+                    <text x="15" y="72" fill="#9ca3af" font-size="8">HEEL</text>
+                    <text x="126" y="72" fill="#9ca3af" font-size="8">TOE</text>
+                </svg>
+            </div>
+            <p>Pattern is centered on the tooth, slightly toward the toe. Occupies roughly the center 60–70% of tooth width and height. Good noise and wear characteristics.</p>
+            <div class="fix" style="color:#34d399;">No adjustment needed. Assembly is correct.</div>
+        </div>
+
+        <!-- Pinion too Deep -->
+        <div class="pattern-card">
+            <div class="pattern-status" style="color:#f87171;">PINION TOO DEEP</div>
+            <h4>Pattern Toward Toe (Face)</h4>
+            <div class="pattern-diagram">
+                <svg viewBox="0 0 160 80" width="100%" height="100%">
+                    <rect x="0" y="0" width="160" height="80" fill="#0f172a"/>
+                    <rect x="10" y="10" width="140" height="60" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                    <rect x="20" y="20" width="120" height="40" rx="3" fill="rgba(255,255,255,0.06)"/>
+                    <!-- Pattern shifted to toe / top of tooth -->
+                    <ellipse cx="115" cy="33" rx="30" ry="10" fill="rgba(239,68,68,0.5)" stroke="#ef4444" stroke-width="1.5"/>
+                    <text x="115" y="36" text-anchor="middle" fill="white" font-size="8" font-weight="700">TOO DEEP</text>
+                    <text x="15" y="72" fill="#9ca3af" font-size="8">HEEL</text>
+                    <text x="126" y="72" fill="#9ca3af" font-size="8">TOE</text>
+                </svg>
+            </div>
+            <p>Pattern concentrated at the toe (narrow end) and/or top of the tooth face. Pinion is pushed too far into the ring gear.</p>
+            <div class="fix">Fix: Remove pinion shim to pull the pinion back out (decrease depth).</div>
+        </div>
+
+        <!-- Pinion too shallow -->
+        <div class="pattern-card">
+            <div class="pattern-status" style="color:#f87171;">PINION TOO SHALLOW</div>
+            <h4>Pattern Toward Heel (Flank)</h4>
+            <div class="pattern-diagram">
+                <svg viewBox="0 0 160 80" width="100%" height="100%">
+                    <rect x="0" y="0" width="160" height="80" fill="#0f172a"/>
+                    <rect x="10" y="10" width="140" height="60" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                    <rect x="20" y="20" width="120" height="40" rx="3" fill="rgba(255,255,255,0.06)"/>
+                    <!-- Pattern shifted to heel / bottom of tooth -->
+                    <ellipse cx="45" cy="50" rx="28" ry="10" fill="rgba(239,68,68,0.5)" stroke="#ef4444" stroke-width="1.5"/>
+                    <text x="45" y="53" text-anchor="middle" fill="white" font-size="7" font-weight="700">TOO SHALLOW</text>
+                    <text x="15" y="72" fill="#9ca3af" font-size="8">HEEL</text>
+                    <text x="126" y="72" fill="#9ca3af" font-size="8">TOE</text>
+                </svg>
+            </div>
+            <p>Pattern at the heel (wide end) and/or bottom of the tooth flank. Pinion is not pushed deep enough into the ring gear.</p>
+            <div class="fix">Fix: Add pinion shim to push the pinion deeper (increase depth).</div>
+        </div>
+
+        <!-- Backlash effect -->
+        <div class="pattern-card">
+            <div class="pattern-status" style="color:#fbbf24;">BACKLASH EFFECT</div>
+            <h4>Drive vs. Coast Pattern Shift</h4>
+            <div class="pattern-diagram">
+                <svg viewBox="0 0 160 80" width="100%" height="100%">
+                    <rect x="0" y="0" width="160" height="80" fill="#0f172a"/>
+                    <rect x="10" y="10" width="140" height="60" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                    <rect x="20" y="20" width="120" height="40" rx="3" fill="rgba(255,255,255,0.06)"/>
+                    <!-- Drive pattern high -->
+                    <ellipse cx="80" cy="30" rx="28" ry="8" fill="rgba(59,130,246,0.5)" stroke="#3b82f6" stroke-width="1.5"/>
+                    <text x="80" y="33" text-anchor="middle" fill="white" font-size="7" font-weight="700">DRIVE</text>
+                    <!-- Coast pattern low -->
+                    <ellipse cx="80" cy="53" rx="28" ry="8" fill="rgba(245,158,11,0.4)" stroke="#f59e0b" stroke-width="1.5"/>
+                    <text x="80" y="56" text-anchor="middle" fill="white" font-size="7" font-weight="700">COAST</text>
+                    <text x="15" y="72" fill="#9ca3af" font-size="8">HEEL</text>
+                    <text x="126" y="72" fill="#9ca3af" font-size="8">TOE</text>
+                </svg>
+            </div>
+            <p>Drive and coast patterns are separated top-to-bottom (not side-to-side). This is controlled by backlash, not pinion depth.</p>
+            <div class="fix">Fix: Adjust backlash (move shims side-to-side) until patterns are symmetrical around tooth center.</div>
+        </div>
+    </div>
+
+    <div style="margin-top:2rem; padding:1.25rem; background:rgba(17,24,39,0.6); border:1px solid var(--card-border); border-radius:12px; font-size:0.82rem; color:var(--text-muted); line-height:1.6;">
+        <strong style="color:var(--text-main);">Important reminder:</strong> Specs above are typical ranges. Always verify pinion bearing preload, backlash, and torque specs against your specific axle service manual. Pinion etched markings (+/−) modify the standard mounting distance — a positive etching means the pinion wants to be that much further from the centerline; a negative etching means closer. Factor this into your target marking value.
+    </div>
+</div>
+
+<script>
+    // ── AXLE / PRELOAD SPECS ──────────────────────────────────────────────
+    const AXLE_SPECS = {
+        'ford-88':      { label: 'Ford 8.8"',           newPL: [16,29], usedPL: [8,14],  blRange: [0.008,0.015] },
+        'ford-9':       { label: 'Ford 9"',              newPL: [17,27], usedPL: [8,14],  blRange: [0.004,0.009] },
+        'dana-30':      { label: 'Dana 30',              newPL: [20,40], usedPL: [10,20], blRange: [0.004,0.009] },
+        'dana-35':      { label: 'Dana 35',              newPL: [20,40], usedPL: [10,20], blRange: [0.006,0.010] },
+        'dana-44':      { label: 'Dana 44',              newPL: [20,40], usedPL: [10,20], blRange: [0.006,0.012] },
+        'dana-60':      { label: 'Dana 60',              newPL: [20,40], usedPL: [10,20], blRange: [0.006,0.012] },
+        'gm-75':        { label: 'GM 7.5" (10-bolt)',    newPL: [15,25], usedPL: [8,12],  blRange: [0.005,0.009] },
+        'gm-85':        { label: 'GM 8.5" (10-bolt)',    newPL: [15,25], usedPL: [8,12],  blRange: [0.005,0.009] },
+        'gm-86':        { label: 'GM 8.6" (10-bolt)',    newPL: [15,25], usedPL: [8,12],  blRange: [0.005,0.009] },
+        'gm-12bolt':    { label: 'GM 12-bolt',           newPL: [20,35], usedPL: [10,15], blRange: [0.006,0.010] },
+        'chrysler-825': { label: 'Chrysler 8.25"',       newPL: [15,25], usedPL: [8,14],  blRange: [0.004,0.008] },
+        'chrysler-925': { label: 'Chrysler 9.25"',       newPL: [15,25], usedPL: [8,14],  blRange: [0.006,0.012] },
+        'toyota-8':     { label: 'Toyota 8"',            newPL: [17,26], usedPL: [8,14],  blRange: [0.005,0.008] },
+        'other':        { label: 'Other / Unknown',      newPL: [16,30], usedPL: [8,16],  blRange: [0.006,0.012] },
+    };
+
+    // ── EXAMPLE DATA ──────────────────────────────────────────────────────
+    const EXAMPLE_DATA = {
+        current: { faceRace:0.473, raceOD:3.310, spec1:4.941, spec2:null, target:2.809, chkCarrier:true, housingWidth:8.000, carrierWidth:7.950, preload:0.008 },
+        desired: { faceRace:0.473, raceOD:3.310, spec1:2.813, spec2:1.911, target:4.720, chkCarrier:true, housingWidth:8.000, carrierWidth:7.950, preload:0.008 }
+    };
+
+    // ── STATE ─────────────────────────────────────────────────────────────
+    let currentTab = 'current';
+    let ringGearSide = 'left';
+
+    // ── INIT ──────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        renderInputForm();
+        setupStaticListeners();
+        calculateAll();
+        updatePreloadSpecs();
+    });
+
+    // ── TAB SWITCH ────────────────────────────────────────────────────────
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tab-current').classList.toggle('active', tab === 'current');
+        document.getElementById('tab-desired').classList.toggle('active', tab === 'desired');
+        renderInputForm();
+        calculateAll();
+    }
+
+    // ── DYNAMIC INPUT FORM ────────────────────────────────────────────────
+    function renderInputForm() {
+        const c1 = document.getElementById('group-mode-specific-1');
+        const c2 = document.getElementById('group-mode-specific-2');
+        const panelTitle = document.getElementById('panel-title');
+
+        if (currentTab === 'current') {
+            panelTitle.innerText = "Current Setup Configuration";
+            c1.innerHTML = `
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-spec-1">Face to Pinion</label>
+                    <span class="input-helper">Diff face → front face of pinion head</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-spec-1" class="input-control" value="4.941">
+                    <span class="input-unit">in</span>
+                </div>`;
+            c2.innerHTML = '';
+            document.getElementById('inp-target-marking').value = "2.809";
+        } else {
+            panelTitle.innerText = "Desired / Mfg Setup Configuration";
+            c1.innerHTML = `
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-spec-1">Manufacturer Checking Distance</label>
+                    <span class="input-helper">Spec pinion face → axle centerline</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-spec-1" class="input-control" value="2.813">
+                    <span class="input-unit">in</span>
+                </div>`;
+            c2.innerHTML = `
+                <div class="input-label-row">
+                    <label class="input-label" for="inp-spec-2">Pinion Head Thickness</label>
+                    <span class="input-helper">Pinion front face → bearing shoulder</span>
+                </div>
+                <div class="input-field-wrapper">
+                    <input type="number" step="0.001" id="inp-spec-2" class="input-control" value="1.911">
+                    <span class="input-unit">in</span>
+                </div>`;
+            document.getElementById('inp-target-marking').value = "4.720";
+        }
+        setupDynamicListeners();
+    }
+
+    // ── LISTENERS ─────────────────────────────────────────────────────────
+    function setupStaticListeners() {
+        document.getElementById('btn-load-example').addEventListener('click', loadExample);
+        document.getElementById('chk-carrier').addEventListener('change', () => {
+            const v = document.getElementById('chk-carrier').checked;
+            document.getElementById('carrier-inputs').style.display = v ? 'flex' : 'none';
+            document.getElementById('card-carrier-shims').style.display = v ? 'flex' : 'none';
+            calculateAll();
+        });
+        ['inp-face-race','inp-race-od','inp-target-marking','inp-housing-width','inp-carrier-width','inp-preload'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateAll);
+        });
+    }
+
+    function setupDynamicListeners() {
+        const s1 = document.getElementById('inp-spec-1');
+        const s2 = document.getElementById('inp-spec-2');
+        if (s1) s1.addEventListener('input', calculateAll);
+        if (s2) s2.addEventListener('input', calculateAll);
+    }
+
+    // ── LOAD EXAMPLE ──────────────────────────────────────────────────────
+    function loadExample() {
+        const data = EXAMPLE_DATA[currentTab];
+        document.getElementById('inp-face-race').value = data.faceRace;
+        document.getElementById('inp-race-od').value = data.raceOD;
+        document.getElementById('inp-spec-1').value = data.spec1;
+        if (currentTab === 'desired' && data.spec2 !== null) {
+            document.getElementById('inp-spec-2').value = data.spec2;
+        }
+        document.getElementById('inp-target-marking').value = data.target;
+        document.getElementById('chk-carrier').checked = data.chkCarrier;
+        document.getElementById('carrier-inputs').style.display = data.chkCarrier ? 'flex' : 'none';
+        document.getElementById('card-carrier-shims').style.display = data.chkCarrier ? 'flex' : 'none';
+        document.getElementById('inp-housing-width').value = data.housingWidth;
+        document.getElementById('inp-carrier-width').value = data.carrierWidth;
+        document.getElementById('inp-preload').value = data.preload;
+        document.getElementById('axle-type').value = 'other';
+        document.getElementById('gear-ratio').value = '3.55';
+        document.getElementById('vehicle-notes').value = '2005 Ram 1500 — Example from setup video';
+        calculateAll();
+        updatePreloadSpecs();
+    }
+
+    // ── MAIN CALCULATION ──────────────────────────────────────────────────
+    function calculateAll() {
+        const faceRace    = parseFloat(document.getElementById('inp-face-race').value) || 0;
+        const raceOD      = parseFloat(document.getElementById('inp-race-od').value) || 0;
+        const targetMark  = parseFloat(document.getElementById('inp-target-marking').value) || 0;
+        const spec1       = parseFloat(document.getElementById('inp-spec-1')?.value) || 0;
+        const spec2       = parseFloat(document.getElementById('inp-spec-2')?.value) || 0;
+
+        // Axle Centerline
+        const centerline = faceRace + (raceOD / 2.0);
+        document.getElementById('res-centerline').innerText = centerline.toFixed(4) + ' in';
+
+        let displayValue = 0, shimAdjustment = 0;
+
+        if (currentTab === 'current') {
+            displayValue = spec1 - centerline;
+            document.getElementById('res-mode-title').innerText  = 'Checking Distance';
+            document.getElementById('res-mode-value').innerText  = displayValue.toFixed(4) + ' in';
+            document.getElementById('formula-mode').innerText    = 'Face to Pinion − Centerline';
+            shimAdjustment = displayValue - targetMark;
+        } else {
+            displayValue = spec1 + spec2;
+            document.getElementById('res-mode-title').innerText  = 'Current Mounting Distance';
+            document.getElementById('res-mode-value').innerText  = displayValue.toFixed(4) + ' in';
+            document.getElementById('formula-mode').innerText    = 'Checking Distance + Pinion Thickness';
+            shimAdjustment = displayValue - targetMark;
+        }
+
+        updateActionBox(shimAdjustment);
+
+        // Carrier shims
+        let carrierShimTotal = 0;
+        if (document.getElementById('chk-carrier').checked) {
+            const hw = parseFloat(document.getElementById('inp-housing-width').value) || 0;
+            const cw = parseFloat(document.getElementById('inp-carrier-width').value) || 0;
+            const pl = parseFloat(document.getElementById('inp-preload').value) || 0;
+            carrierShimTotal = (hw - cw) + pl;
+            document.getElementById('res-carrier').innerText = carrierShimTotal.toFixed(4) + ' in';
+
+            // Push total into backlash section
+            document.getElementById('inp-bl-total-shims').value = carrierShimTotal.toFixed(4);
+
+            // If rg shims not set yet, default to 50%
+            const rgInput = document.getElementById('inp-rg-shims');
+            if (!rgInput._userSet) {
+                rgInput.value = (carrierShimTotal / 2).toFixed(4);
+            }
+        }
+
+        calculateBacklash();
+        updateVisualizer(centerline, spec1, spec2, displayValue);
+    }
+
+    function updateActionBox(diff) {
+        const panel = document.getElementById('action-panel');
+        const heading = document.getElementById('action-heading');
+        const desc = document.getElementById('action-description');
+        panel.className = 'action-alert';
+        const addIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
+        const remIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
+        const okIcon  = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+        if (diff > 0.0001) {
+            panel.classList.add('action-add');
+            heading.innerHTML = `${addIcon} ADD ${diff.toFixed(4)}" of pinion shim`;
+            desc.innerText = 'Pinion is too far from the centerline (not deep enough). Adding shim pushes it deeper.';
+        } else if (diff < -0.0001) {
+            panel.classList.add('action-remove');
+            heading.innerHTML = `${remIcon} REMOVE ${Math.abs(diff).toFixed(4)}" of pinion shim`;
+            desc.innerText = 'Pinion is sitting too deep (too close to centerline). Removing shim pulls it back out.';
+        } else {
+            panel.classList.add('action-ok');
+            heading.innerHTML = `${okIcon} PINION DEPTH IS ON TARGET`;
+            desc.innerText = 'No shimming adjustment required. Proceed to bearing preload.';
+        }
+    }
+
+    // ── PRELOAD SPECS ─────────────────────────────────────────────────────
+    function updatePreloadSpecs() {
+        const axle = document.getElementById('axle-type').value;
+        const condition = document.getElementById('bearing-condition').value;
+        const spec = AXLE_SPECS[axle] || AXLE_SPECS['other'];
+
+        document.getElementById('preload-axle-label').innerText = spec.label + ' — verify with service manual';
+
+        const newRange  = spec.newPL[0] + ' – ' + spec.newPL[1] + ' in-lb';
+        const usedRange = spec.usedPL[0] + ' – ' + spec.usedPL[1] + ' in-lb';
+        document.getElementById('spec-new-range').innerText  = newRange;
+        document.getElementById('spec-used-range').innerText = usedRange;
+
+        // Highlight active row
+        const rows = document.querySelectorAll('#preload-spec-body tr');
+        rows[0].className = condition === 'new'  ? 'highlight-row' : '';
+        rows[1].className = condition === 'used' ? 'highlight-row' : '';
+
+        // Update backlash target range hint
+        const blMin = spec.blRange[0].toFixed(3);
+        const blMax = spec.blRange[1].toFixed(3);
+        document.getElementById('bl-target-range-label').innerText = `Typical for ${spec.label}: ${blMin}" – ${blMax}"`;
+
+        updatePreloadStatus();
+    }
+
+    function updatePreloadStatus() {
+        const measured = parseFloat(document.getElementById('inp-pinion-preload').value);
+        const axle = document.getElementById('axle-type').value;
+        const condition = document.getElementById('bearing-condition').value;
+        const spec = AXLE_SPECS[axle] || AXLE_SPECS['other'];
+        const range = condition === 'new' ? spec.newPL : spec.usedPL;
+
+        if (isNaN(measured)) {
+            document.getElementById('preload-display').innerText = '—';
+            document.getElementById('preload-status-badge').innerHTML = '<span class="status-badge none">Enter a measurement</span>';
+            document.getElementById('preload-status-note').innerText = '';
+            return;
+        }
+
+        document.getElementById('preload-display').innerText = measured.toFixed(1);
+
+        let badge, note;
+        if (measured < range[0] * 0.7) {
+            badge = '<span class="status-badge fail">Too Low</span>';
+            note  = `Preload is well below the ${range[0]}–${range[1]} in-lb target. Tighten the pinion nut in small increments, checking after each. Do not back off a crush sleeve.`;
+        } else if (measured < range[0]) {
+            badge = '<span class="status-badge warn">Slightly Low</span>';
+            note  = `Just below the target range of ${range[0]}–${range[1]} in-lb. A small amount of additional tightening should bring it into spec.`;
+        } else if (measured <= range[1]) {
+            badge = '<span class="status-badge pass">In Spec</span>';
+            note  = `${measured.toFixed(1)} in-lb is within the target range of ${range[0]}–${range[1]} in-lb. Preload is correctly set.`;
+        } else if (measured <= range[1] * 1.3) {
+            badge = '<span class="status-badge warn">Slightly High</span>';
+            note  = `Above the ${range[0]}–${range[1]} in-lb target. If using a crush sleeve, it cannot be backed off — install a new sleeve and start over. If using a solid spacer, remove a thin shim.`;
+        } else {
+            badge = '<span class="status-badge fail">Too High — Rebuild Required</span>';
+            note  = `Significantly over-preloaded. Crush sleeve must be replaced. Do not run — bearing damage will result.`;
+        }
+
+        document.getElementById('preload-status-badge').innerHTML = badge;
+        document.getElementById('preload-status-note').innerText = note;
+    }
+
+    // ── RING GEAR SIDE TOGGLE ─────────────────────────────────────────────
+    function setRingGearSide(side) {
+        ringGearSide = side;
+        document.getElementById('rg-left').classList.toggle('active', side === 'left');
+        document.getElementById('rg-right').classList.toggle('active', side === 'right');
+        updateShimLabels();
+        calculateBacklash();
+    }
+
+    function updateShimLabels() {
+        const rgLabel = ringGearSide === 'left' ? 'LEFT (Ring Gear)' : 'RIGHT (Ring Gear)';
+        const opLabel = ringGearSide === 'left' ? 'RIGHT (Opposite)'  : 'LEFT (Opposite)';
+        document.getElementById('bl-left-label').innerText  = ringGearSide === 'left' ? 'LEFT (Ring Gear)' : 'LEFT (Opposite)';
+        document.getElementById('bl-right-label').innerText = ringGearSide === 'right' ? 'RIGHT (Ring Gear)' : 'RIGHT (Opposite)';
+        document.getElementById('bl-rg-side-title').innerText = 'Ring Gear Side (' + (ringGearSide === 'left' ? 'Left' : 'Right') + ')';
+        document.getElementById('bl-op-side-title').innerText = 'Opposite Side (' + (ringGearSide === 'left' ? 'Right' : 'Left') + ')';
+    }
+
+    // ── BACKLASH CALCULATION ──────────────────────────────────────────────
+    document.getElementById('inp-rg-shims').addEventListener('input', function() {
+        this._userSet = true;
+        calculateBacklash();
+    });
+
+    function calculateBacklash() {
+        const total    = parseFloat(document.getElementById('inp-bl-total-shims').value) || 0;
+        const rgShims  = parseFloat(document.getElementById('inp-rg-shims').value) || 0;
+        const opShims  = total - rgShims;
+
+        // Update split bar
+        const leftShims  = ringGearSide === 'left' ? rgShims : opShims;
+        const rightShims = ringGearSide === 'left' ? opShims : rgShims;
+
+        const leftPct  = total > 0 ? (leftShims / total) * 100 : 50;
+        const rightPct = total > 0 ? (rightShims / total) * 100 : 50;
+
+        document.getElementById('shim-bar-left').style.flex  = leftPct.toFixed(1);
+        document.getElementById('shim-bar-right').style.flex = rightPct.toFixed(1);
+        document.getElementById('shim-bar-left-val').innerText  = leftShims.toFixed(4) + '"';
+        document.getElementById('shim-bar-right-val').innerText = rightShims.toFixed(4) + '"';
+
+        document.getElementById('bl-rg-shims').innerText = rgShims.toFixed(4) + ' in';
+        document.getElementById('bl-op-shims').innerText = opShims.toFixed(4) + ' in';
+        document.getElementById('bl-rg-side-note').innerText = 'Current — adjust to hit backlash target';
+
+        updateShimLabels();
+
+        // Backlash adjustment
+        const measuredBL = parseFloat(document.getElementById('inp-measured-bl').value);
+        const targetBL   = parseFloat(document.getElementById('inp-target-bl').value) || 0.008;
+        const actionPanel = document.getElementById('bl-action-panel');
+
+        if (isNaN(measuredBL)) {
+            actionPanel.className = 'backlash-action bl-none';
+            document.getElementById('bl-action-heading').style.color = 'var(--text-muted)';
+            document.getElementById('bl-action-heading').innerText = 'Enter measured backlash to get adjustment';
+            document.getElementById('bl-action-desc').innerText = 'Measure backlash with a dial indicator on the ring gear teeth face, with the pinion held still.';
+            return;
+        }
+
+        const delta = measuredBL - targetBL;
+        const moveAmt = Math.abs(delta).toFixed(4);
+        const rgSideLabel = ringGearSide === 'left' ? 'Left' : 'Right';
+        const opSideLabel = ringGearSide === 'left' ? 'Right' : 'Left';
+
+        if (Math.abs(delta) < 0.0005) {
+            actionPanel.className = 'backlash-action bl-ok';
+            document.getElementById('bl-action-heading').innerHTML = `<span style="color:#34d399;">Backlash is on target — ${measuredBL.toFixed(4)}"</span>`;
+            document.getElementById('bl-action-desc').innerText = 'No shim redistribution needed. Verify pattern and finalize assembly.';
+        } else if (delta > 0) {
+            // Too much backlash → move shims TO ring gear side FROM opposite side
+            actionPanel.className = 'backlash-action move-rg';
+            const newRGShims = (rgShims + Math.abs(delta)).toFixed(4);
+            const newOPShims = (opShims - Math.abs(delta)).toFixed(4);
+            document.getElementById('bl-action-heading').innerHTML = `<span style="color:#22d3ee;">Move ${moveAmt}" → TO ${rgSideLabel} (Ring Gear Side)</span>`;
+            document.getElementById('bl-action-desc').innerText =
+                `Backlash is ${measuredBL.toFixed(4)}", target is ${targetBL.toFixed(4)}". ` +
+                `Too much backlash means the ring gear is too far from the pinion. ` +
+                `Move ${moveAmt}" of shim from the ${opSideLabel} side to the ${rgSideLabel} side. ` +
+                `New split: ${rgSideLabel} = ${newRGShims}", ${opSideLabel} = ${newOPShims}". ` +
+                `Re-measure after adjustment — may need iteration.`;
+        } else {
+            // Too little backlash → move shims FROM ring gear side TO opposite side
+            actionPanel.className = 'backlash-action move-op';
+            const newRGShims = (rgShims - Math.abs(delta)).toFixed(4);
+            const newOPShims = (opShims + Math.abs(delta)).toFixed(4);
+            document.getElementById('bl-action-heading').innerHTML = `<span style="color:#fbbf24;">Move ${moveAmt}" → TO ${opSideLabel} (Opposite Side)</span>`;
+            document.getElementById('bl-action-desc').innerText =
+                `Backlash is ${measuredBL.toFixed(4)}", target is ${targetBL.toFixed(4)}". ` +
+                `Too little backlash means the ring gear is too close to the pinion. ` +
+                `Move ${moveAmt}" of shim from the ${rgSideLabel} side to the ${opSideLabel} side. ` +
+                `New split: ${rgSideLabel} = ${newRGShims}", ${opSideLabel} = ${newOPShims}". ` +
+                `Re-measure after adjustment — may need iteration.`;
+        }
+    }
+
+    // ── RUNOUT STATUS ─────────────────────────────────────────────────────
+    function updateRunoutStatus() {
+        const measured = parseFloat(document.getElementById('inp-runout').value);
+        if (isNaN(measured)) {
+            document.getElementById('runout-display').innerText = '—';
+            document.getElementById('runout-status-badge').innerHTML = '<span class="status-badge none">Enter a measurement</span>';
+            document.getElementById('runout-status-note').innerText = '';
+            return;
+        }
+
+        document.getElementById('runout-display').innerText = measured.toFixed(4);
+
+        let badge, note;
+        if (measured < 0.002) {
+            badge = '<span class="status-badge pass">Excellent — Proceed</span>';
+            note  = 'Runout is excellent. Proceed with backlash and pattern verification.';
+        } else if (measured <= 0.003) {
+            badge = '<span class="status-badge pass">Acceptable — Proceed</span>';
+            note  = 'Runout is within tolerance. Monitor for noise during break-in.';
+        } else if (measured <= 0.005) {
+            badge = '<span class="status-badge warn">High — Reseat Ring Gear</span>';
+            note  = 'Runout exceeds preferred limit. Remove ring gear, clean mating surfaces thoroughly, re-torque in a star pattern (all holes), and re-check before proceeding.';
+        } else {
+            badge = '<span class="status-badge fail">FAIL — Do Not Run</span>';
+            note  = 'Runout is excessive. Do not install. Identify cause: debris, bent ring gear, damaged carrier flange, or incorrect torque. Fix before continuing.';
+        }
+
+        document.getElementById('runout-status-badge').innerHTML = badge;
+        document.getElementById('runout-status-note').innerText = note;
+    }
+
+    // ── SVG VISUALIZER ────────────────────────────────────────────────────
+    function updateVisualizer(centerline, spec1, spec2, displayValue) {
+        const scale = 100, xOffset = 50;
+
+        let clX = xOffset + (centerline * scale);
+        if (clX < 80) clX = 80;
+        if (clX > 320) clX = 320;
+
+        document.getElementById('svg-centerline').setAttribute('x1', clX);
+        document.getElementById('svg-centerline').setAttribute('x2', clX);
+        document.getElementById('svg-centerline-lbl').setAttribute('x', clX + 6);
+
+        const raceOD = parseFloat(document.getElementById('inp-race-od').value) || 0;
+        const raceWidth = raceOD * scale;
+        const raceX = clX - (raceWidth / 2);
+        document.getElementById('svg-bearing-race').setAttribute('x', raceX);
+        document.getElementById('svg-bearing-race').setAttribute('width', raceWidth);
+
+        let pinionFaceX;
+        if (currentTab === 'current') {
+            pinionFaceX = xOffset + (spec1 * scale);
+        } else {
+            pinionFaceX = xOffset + ((spec1 + centerline) * scale);
+        }
+        if (pinionFaceX < clX + 20) pinionFaceX = clX + 20;
+        if (pinionFaceX > 490) pinionFaceX = 490;
+
+        document.getElementById('svg-pinion-head').setAttribute('x', pinionFaceX);
+        document.getElementById('svg-pinion-shaft').setAttribute('x', pinionFaceX + 80);
+        document.getElementById('svg-pinion-lbl').setAttribute('x', pinionFaceX + 8);
+
+        // Centerline dim
+        const dimCL = document.getElementById('svg-dim-centerline');
+        dimCL.querySelector('line').setAttribute('x2', clX);
+        dimCL.querySelector('circle:nth-of-type(2)').setAttribute('cx', clX);
+        document.getElementById('svg-dim-centerline-text').innerText = `Centerline: ${centerline.toFixed(3)}"`;
+        document.getElementById('svg-dim-centerline-text').setAttribute('x', (50 + clX) / 2 - 40);
+
+        // Face to pinion dim
+        const dimPinion = document.getElementById('svg-dim-pinion');
+        if (currentTab === 'current') {
+            dimPinion.style.display = 'block';
+            dimPinion.querySelector('line').setAttribute('x2', pinionFaceX);
+            dimPinion.querySelector('circle:nth-of-type(2)').setAttribute('cx', pinionFaceX);
+            document.getElementById('svg-dim-pinion-text').innerText = `Face to Pinion: ${spec1.toFixed(3)}"`;
+            document.getElementById('svg-dim-pinion-text').setAttribute('x', (50 + pinionFaceX) / 2 - 50);
+        } else {
+            dimPinion.style.display = 'none';
+        }
+
+        // Checking distance dim
+        const dimCD = document.getElementById('svg-dim-cd');
+        dimCD.querySelector('line').setAttribute('x1', clX);
+        dimCD.querySelector('line').setAttribute('x2', pinionFaceX);
+        dimCD.querySelector('circle:nth-of-type(1)').setAttribute('cx', clX);
+        dimCD.querySelector('circle:nth-of-type(2)').setAttribute('cx', pinionFaceX);
+        const cdVal = currentTab === 'current' ? (spec1 - centerline) : spec1;
+        document.getElementById('svg-dim-cd-text').innerText = `Checking: ${cdVal.toFixed(3)}"`;
+        document.getElementById('svg-dim-cd-text').setAttribute('x', (clX + pinionFaceX) / 2 - 35);
+    }
+</script>
+
+<!-- ═══════════════════════════════════════════════════════ TUTORIAL SYSTEM -->
+<style>
+#tut-spotlight {
+    position: fixed;
+    z-index: 9998;
+    border-radius: 10px;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.82);
+    outline: 2.5px solid rgba(59,130,246,0.9);
+    outline-offset: 3px;
+    pointer-events: none;
+    transition: top 0.32s ease, left 0.32s ease, width 0.32s ease, height 0.32s ease;
+    display: none;
+}
+#tut-popup {
+    position: fixed;
+    z-index: 10000;
+    width: 440px;
+    max-width: calc(100vw - 32px);
+    background: rgba(11, 15, 25, 0.97);
+    border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
+    padding: 1.4rem 1.5rem 1.25rem;
+    display: none;
+    backdrop-filter: blur(24px);
+    font-family: 'Inter', sans-serif;
+    transition: top 0.32s ease, left 0.32s ease;
+}
+.tut-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+}
+.tut-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #60a5fa;
+    background: rgba(59,130,246,0.14);
+    border: 1px solid rgba(59,130,246,0.3);
+    padding: 0.22rem 0.65rem;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+#tut-exit-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.28rem 0.65rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Inter', sans-serif;
+}
+#tut-exit-btn:hover { border-color: #ef4444; color: #f87171; background: rgba(239,68,68,0.07); }
+.tut-progress-track {
+    height: 2px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+.tut-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    border-radius: 2px;
+    transition: width 0.35s ease;
+}
+#tut-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.0rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.6rem;
+    line-height: 1.35;
+}
+#tut-desc {
+    font-size: 0.845rem;
+    color: #d1d5db;
+    line-height: 1.62;
+    margin-bottom: 0.7rem;
+    white-space: pre-line;
+}
+#tut-source {
+    font-size: 0.8rem;
+    color: #93c5fd;
+    background: rgba(59,130,246,0.07);
+    border: 1px solid rgba(59,130,246,0.18);
+    border-radius: 8px;
+    padding: 0.55rem 0.8rem;
+    line-height: 1.58;
+    margin-bottom: 1rem;
+}
+.tut-nav-row {
+    display: flex;
+    gap: 0.55rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+#tut-prev-btn {
+    background: rgba(255,255,255,0.06);
+    color: #9ca3af;
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Inter', sans-serif;
+}
+#tut-prev-btn:hover { background: rgba(255,255,255,0.1); color: #e5e7eb; }
+#tut-next-btn {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+    border: none;
+    font-size: 0.84rem;
+    font-weight: 700;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.4);
+    transition: all 0.18s;
+    font-family: 'Inter', sans-serif;
+}
+#tut-next-btn:hover { box-shadow: 0 4px 20px rgba(59,130,246,0.6); transform: translateY(-1px); }
+#btn-start-tutorial {
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.35);
+    color: #60a5fa;
+    padding: 0.65rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.25s;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+}
+#btn-start-tutorial:hover { background: rgba(59,130,246,0.22); border-color: #3b82f6; box-shadow: 0 0 16px rgba(59,130,246,0.3); }
+</style>
+
+<div id="tut-spotlight"></div>
+<div id="tut-popup">
+    <div class="tut-top-row">
+        <span class="tut-badge" id="tut-badge">Step 1 of 19</span>
+        <button id="tut-exit-btn">✕ Exit Tutorial</button>
+    </div>
+    <div class="tut-progress-track">
+        <div class="tut-progress-fill" id="tut-progress-fill" style="width:5%"></div>
+    </div>
+    <div id="tut-title"></div>
+    <div id="tut-desc"></div>
+    <div id="tut-source"></div>
+    <div class="tut-nav-row">
+        <button id="tut-prev-btn" style="display:none">← Back</button>
+        <button id="tut-next-btn">Next →</button>
+    </div>
+</div>
+
+<script>
+// ─── TUTORIAL STEPS ───────────────────────────────────────────────────────────
+const TUT_STEPS = [
+    {
+        id: null,
+        title: '🔧 Welcome to the Differential Setup Tutorial',
+        desc: 'This calculator walks you through a complete first-time differential setup in 5 steps:\n\n  ① Pinion Depth  →  ② Pinion Preload  →  ③ Backlash\n  →  ④ Runout  →  ⑤ Pattern Check\n\nWe\'ll walk through every input field — what it means, how to measure it, and where to find the value. Click Next to start, or Exit at any time.',
+        source: null,
+    },
+    {
+        id: 'axle-type',
+        title: 'Header — Differential / Axle Type',
+        desc: 'Select the exact axle you\'re working on. This automatically populates the correct pinion preload specs and typical backlash target ranges for your differential.',
+        source: '📋 Where to find it: The axle ID tag (a small riveted metal plate on the housing), the driver door jamb sticker, or your vehicle\'s build sheet. Common examples: Ford 8.8", Dana 44, GM 12-bolt.',
+    },
+    {
+        id: 'gear-ratio',
+        title: 'Header — Gear Ratio',
+        desc: 'The ring-and-pinion gear ratio installed in the differential (e.g., 3.73, 4.10, 4.56). Used for documentation only — it doesn\'t change any of the calculator\'s math.',
+        source: '📋 Where to find it: The axle identification tag, the door jamb sticker (look for a ratio code), or calculate it: count ring gear teeth ÷ pinion teeth.',
+    },
+    {
+        id: 'bearing-condition',
+        title: 'Header — Bearing Condition',
+        desc: 'Are the pinion bearings new or reused? New bearings require higher preload (they need to seat in), while previously run bearings need less. This sets the correct preload target range in Step 2.',
+        source: '📋 Based on: Fresh bearings from a rebuild kit = "New Bearings." Carefully removed and reinstalled original bearings = "Reused / Used."',
+    },
+    {
+        id: 'vehicle-notes',
+        title: 'Header — Vehicle / Notes',
+        desc: 'Your own reference field — year, make, model, front or rear axle, gear brand, anything you want. It prints on the sheet if you click Print Sheet. No effect on calculations.',
+        source: '📋 Example: "2005 Ram 1500 — 9.25" rear — Motive 4.10 gears — first rebuild"',
+    },
+    {
+        id: 'tab-current',
+        title: 'Step 1 — Setup Mode: Current vs. Manufacturing Specs',
+        desc: '"Current Setup" — You\'re measuring an existing/disassembled differential and comparing your actual measurements to the etching on the pinion head. This is the most common rebuild scenario.\n\n"Manufacturing Specs" — You have the factory checking distance from a service manual and are verifying pinion position from those published specs.',
+        source: '📋 Use "Current Setup" for most gear rebuilds. Switch to "Manufacturing Specs" only if working directly from OEM service manual factory specs.',
+    },
+    {
+        id: 'inp-face-race',
+        title: 'Step 1 — Face to Race',
+        desc: 'The distance from the differential housing face (the flat machined ring where the diff cover bolts on) down to the top surface of the carrier bearing race bore. This locates the axle centerline.',
+        source: '📏 How to measure: Rest a depth micrometer or digital depth gauge base flat on the housing face, drop the probe to the carrier bearing race bore surface. Take 2–3 readings at different points and average them. Typical range: 0.30" – 0.60".',
+    },
+    {
+        id: 'inp-race-od',
+        title: 'Step 1 — Race Outer Diameter (OD)',
+        desc: 'The outside diameter of the carrier bearing race (the outer cup pressed into the housing bore). Half of this is added to Face-to-Race to calculate the exact axle centerline.',
+        source: '📏 How to measure: Outside calipers or micrometer across the bearing race. Or look up the bearing part number — OD is in the bearing catalog. Typical range: 2.80" – 3.80".',
+    },
+    {
+        id: 'inp-spec-1',
+        title: 'Step 1 — Face to Pinion',
+        desc: 'The distance from the differential housing face to the front face of the pinion head. Subtracting the axle centerline from this gives the "checking distance" — how far the pinion is actually positioned from the axle centerline.',
+        source: '📏 How to measure: With the pinion fully installed and nut torqued, use a depth gauge reaching through the housing to the pinion head\'s front face. Or use a telescoping gauge + outside micrometer. Typical range: 4.50" – 5.50".',
+    },
+    {
+        id: 'inp-target-marking',
+        title: 'Step 1 — Pinion Etched Target Marking',
+        desc: 'The manufacturer\'s desired checking distance stamped on the pinion head — your target. Shim the pinion until the checking distance equals this number.\n\nIf the marking is "+2" or "−3": these are offsets in thousandths from a standard distance. Add or subtract from the baseline in your service manual.',
+        source: '📋 Where to find it: Stamped or etched on the flat end (head face) of the pinion gear, near the teeth end. Usually a 4-digit decimal like "2.809" or a +/− offset number. Typical range: 2.60" – 3.10".',
+    },
+    {
+        id: 'inp-housing-width',
+        title: 'Step 1 — Housing Internal Width',
+        desc: 'The inside measurement between the two carrier bearing bulkheads — the bores where the carrier bearing races (outer cups) seat in the housing. This is the total space available for the carrier assembly plus shims.',
+        source: '📏 How to measure: Use an inside micrometer or large telescoping gauge between the two bearing bore surfaces inside the housing. Measure the actual bore-to-bore span, not the opening. Typical range: 7.50" – 9.50".',
+    },
+    {
+        id: 'inp-carrier-width',
+        title: 'Step 1 — Carrier + Races Width',
+        desc: 'The total width of the carrier assembly with both bearing races pressed onto the bearings, measured WITHOUT any shims installed. The gap between the housing width and this value tells you how much shim you need before adding preload.',
+        source: '📏 How to measure: With races pressed on and the assembly out of the housing, use an outside micrometer across the two race faces. Typical range: 7.40" – 9.40" (always slightly less than housing width).',
+    },
+    {
+        id: 'inp-preload',
+        title: 'Step 1 — Desired Carrier Preload',
+        desc: 'The interference (crush/preload) you want the carrier bearings to have. This gets added to the gap between housing and carrier width. The total shim stack = (housing width − carrier width) + carrier preload.',
+        source: '📋 Typical value: Start at 0.008" for most street/performance builds (0.006" – 0.010" range). Higher-power builds sometimes use 0.010" – 0.012". Confirm with your axle\'s service manual.',
+    },
+    {
+        id: 'inp-pinion-preload',
+        title: 'Step 2 — Measured Rotating Preload',
+        desc: 'The torque (in inch-pounds) required to continuously rotate the pinion. Too low = premature bearing failure. Too high = over-crushed sleeve that must be completely replaced.\n\n⚠️ Ring gear must be OUT. Pinion seal must NOT be installed yet.',
+        source: '📏 How to measure: Attach an in-lb torque wrench with a crow-foot or socket to the pinion nut. Tighten in small 1/8-turn increments. After each, check rotating (continuous) torque — not breakaway click. Never back off a crush sleeve. Typical target: 16–30 in-lb (new), 8–16 in-lb (reused).',
+    },
+    {
+        id: 'rg-left',
+        title: 'Step 3 — Ring Gear Side',
+        desc: 'Which side of the differential the ring gear is on, looking from the pinion (yoke) end. This tells the calculator which direction to recommend moving shims when you need to increase or decrease backlash.',
+        source: '📋 How to determine: Stand at the back of the vehicle and look into the differential from the yoke/driveshaft end. Ring gear is most often on the driver\'s side (left) for rear axles — but always verify visually. It\'s easy to see once the diff is open.',
+    },
+    {
+        id: 'inp-rg-shims',
+        title: 'Step 3 — Ring Gear Side Shims (Current)',
+        desc: 'Shim thickness currently on the ring gear side. Moving shims from one side to the other shifts the ring gear laterally, which directly changes backlash. Total shim stack is always constant — only the split between sides changes.',
+        source: '📏 Starting point: Begin with exactly half the total shim stack on each side (50/50). After measuring actual backlash, the calculator tells you exactly how much to move from one side to the other to hit your target.',
+    },
+    {
+        id: 'inp-measured-bl',
+        title: 'Step 3 — Measured Backlash',
+        desc: 'The lash (play) between the ring gear and pinion teeth measured with a dial indicator. Correct backlash is critical — too little causes binding and heat, too much causes clunking and accelerated tooth wear.',
+        source: '📏 How to measure: Mount a dial indicator on the ring gear face (perpendicular to the tooth surface). Hold the pinion completely still. Rock the ring gear back and forth and record the total needle sweep. Check at 3–4 spots around the ring gear — note the lowest reading. Typical spec: 0.006" – 0.012".',
+    },
+    {
+        id: 'inp-target-bl',
+        title: 'Step 3 — Target Backlash',
+        desc: 'The desired backlash for your gear set. The calculator auto-fills a typical range based on your axle selection. Always verify with your specific gear manufacturer\'s instruction sheet — aftermarket gears sometimes differ from OEM specs.',
+        source: '📋 Where to find it: The instruction card inside your ring & pinion box, or the axle service manual. When in doubt, 0.008" is a safe universal starting point for most axles.',
+    },
+    {
+        id: 'inp-runout',
+        title: 'Step 4 — Measured Ring Gear TIR',
+        desc: 'Total Indicated Runout — how much the ring gear wobbles as it rotates one full revolution. Excessive runout causes backlash to vary around the ring gear, producing noise and uneven wear.\n\n✅ < 0.002" = Excellent — proceed\n✅ 0.002–0.003" = Acceptable\n⚠️ 0.003–0.005" = Reseat ring gear\n❌ > 0.005" = Do not run — find and fix cause',
+        source: '📏 How to measure: Mount a dial indicator on the back face of the ring gear (the flat side, not teeth). Rotate carrier exactly one full revolution. Record total needle swing (max − min). If too high: remove gear, clean both mating surfaces, re-torque bolts in a star pattern at spec torque, re-check.',
+    },
+    {
+        id: null,
+        title: '✅ Step 5: Gear Contact Pattern — You\'re Done Entering Data!',
+        desc: 'The final check is visual — no measurements to enter here.\n\nApply a thin coat of gear marking compound (gear blue) to 6–8 ring gear teeth. Apply drag resistance and rotate the ring gear by hand in both directions. Compare the resulting pattern:\n\n✅ Centered on tooth — pinion depth is perfect. Assemble!\n🔴 Toward Toe (narrow end) — pinion too deep, remove shim\n🔴 Toward Heel (wide end) — pinion too shallow, add shim\n🟡 Drive/Coast split top-to-bottom — backlash off, move shims side-to-side\n\nSee the pattern diagrams at the bottom of the page for visual reference.',
+        source: null,
+    },
+];
+
+// ─── TUTORIAL ENGINE ──────────────────────────────────────────────────────────
+let _tutStep = 0;
+let _tutOn   = false;
+
+function _tutOpen() {
+    _tutStep = 0;
+    _tutOn   = true;
+    document.getElementById('tut-popup').style.display = 'block';
+    _tutRender();
+}
+
+function _tutClose() {
+    _tutOn = false;
+    document.getElementById('tut-popup').style.display = 'none';
+    document.getElementById('tut-spotlight').style.display = 'none';
+}
+
+function _tutRender() {
+    const step  = TUT_STEPS[_tutStep];
+    const total = TUT_STEPS.length;
+
+    document.getElementById('tut-badge').textContent = 'Step ' + (_tutStep + 1) + ' of ' + total;
+    document.getElementById('tut-progress-fill').style.width = ((_tutStep + 1) / total * 100) + '%';
+    document.getElementById('tut-title').textContent = step.title;
+    document.getElementById('tut-desc').textContent  = step.desc;
+
+    const srcEl = document.getElementById('tut-source');
+    if (step.source) { srcEl.textContent = step.source; srcEl.style.display = 'block'; }
+    else             { srcEl.style.display = 'none'; }
+
+    document.getElementById('tut-prev-btn').style.display = _tutStep > 0 ? 'inline-block' : 'none';
+    document.getElementById('tut-next-btn').textContent   = _tutStep === total - 1 ? '✓ Finish' : 'Next →';
+
+    if (step.id) {
+        const el = document.getElementById(step.id);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(function() { _tutPositionOn(el); }, 380);
+            return;
+        }
+    }
+    document.getElementById('tut-spotlight').style.display = 'none';
+    _tutCenter();
+}
+
+function _tutPositionOn(el) {
+    var PAD = 12, GAP = 16;
+    var r   = el.getBoundingClientRect();
+    var vw  = window.innerWidth, vh = window.innerHeight;
+
+    // Spotlight
+    var spot = document.getElementById('tut-spotlight');
+    spot.style.display = 'block';
+    spot.style.top    = (r.top    - PAD) + 'px';
+    spot.style.left   = (r.left   - PAD) + 'px';
+    spot.style.width  = (r.width  + PAD * 2) + 'px';
+    spot.style.height = (r.height + PAD * 2) + 'px';
+
+    // Popup
+    var popup  = document.getElementById('tut-popup');
+    var popW   = 440;
+    var popH   = popup.offsetHeight || 340;
+    var top, left;
+
+    if (vh - r.bottom - PAD - GAP >= popH) {
+        top = r.bottom + PAD + GAP;
+    } else if (r.top - PAD - GAP >= popH) {
+        top = r.top - PAD - GAP - popH;
+    } else {
+        top = Math.max(16, Math.min(vh - popH - 16, r.top - popH / 2));
+    }
+    left = r.left + r.width / 2 - popW / 2;
+    left = Math.max(12, Math.min(left, vw - popW - 12));
+
+    popup.style.transform = 'none';
+    popup.style.top  = top  + 'px';
+    popup.style.left = left + 'px';
+}
+
+function _tutCenter() {
+    var popup = document.getElementById('tut-popup');
+    popup.style.top  = '50%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Wire buttons
+    document.getElementById('tut-exit-btn').onclick = _tutClose;
+
+    document.getElementById('tut-next-btn').onclick = function() {
+        if (_tutStep < TUT_STEPS.length - 1) { _tutStep++; _tutRender(); }
+        else { _tutClose(); }
+    };
+    document.getElementById('tut-prev-btn').onclick = function() {
+        if (_tutStep > 0) { _tutStep--; _tutRender(); }
+    };
+
+    // Inject "Start Tutorial" button into header actions
+    var headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+        var tutBtn = document.createElement('button');
+        tutBtn.id = 'btn-start-tutorial';
+        tutBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Start Tutorial';
+        tutBtn.onclick = _tutOpen;
+        headerActions.insertBefore(tutBtn, headerActions.firstChild);
+    }
+
+    // Auto-launch on first open
+    setTimeout(_tutOpen, 700);
+});
+</script>
+</body>
+</html>
